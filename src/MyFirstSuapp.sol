@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.8;
 
-contract MyFirstSuapp { 
+import "suave-std/Suapp.sol";
+
+contract MyFirstSuapp is Suapp { 
     event OffchainEvent(uint256 num);
 
-    function onchain() public {}
+    function onchain() public emitOffchainLogs {}
 
     function offchain() public returns (bytes memory) {
         emit OffchainEvent(1);
