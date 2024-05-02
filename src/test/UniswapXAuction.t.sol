@@ -2,16 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "suave-std/Test.sol";
+import "suave-std/suavelib/Suave.sol";
 
-contract TestEncode is Test {
-
+contract UniswapXAuctionTest is Test, SuaveEnabled {
     struct RFQRequest {
         address tokenIn;
         string[] webhooks;
-    }
-
-    function setUp() public {
-
     }
 
     event Log(bytes data);
@@ -34,5 +31,16 @@ contract TestEncode is Test {
             webhooks: webhooks
         });
         emit Log(abi.encode(rfqRequest));
+    }
+
+    function testConfidentialInputsWithStruct() public {
+        bytes memory input = abi.encode(RFQRequest({
+            tokenIn: address(0),
+            webhooks: new string[](0)
+        }));
+        ctx.setConfidentialInputs(input);
+
+        bytes memory found2 = Suave.confidentialInputs();
+        assertEq0(input, found2);
     }
 }
