@@ -4,3 +4,6 @@
 [submodule "lib/suave-std"]
 	path = lib/suave-std
 	url = https://github.com/flashbots/suave-std
+[submodule "lib/UniswapX"]
+	path = lib/UniswapX
+	url = https://github.com/Uniswap/UniswapX
