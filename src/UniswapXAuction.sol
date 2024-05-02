@@ -9,6 +9,11 @@ import {Webhook} from "./lib/Webhook.sol";
 
 contract UniswapXAuction is Suapp {
     Suave.DataId webhookRecord;
+    
+    struct RFQRequest {
+        address tokenIn;
+        // string[] webhooks;
+    }
 
     event WebhookNameRegistered(string name);
 
@@ -35,12 +40,17 @@ contract UniswapXAuction is Suapp {
 
     event RFQResponse(string quote);
     event WinningQuote(uint256 quote);
+    event LogBytes(bytes data);
 
     function onchain() external payable emitOffchainLogs {}
 
     function offchain() external returns (bytes memory) {
-        // An offchain request must contain which webhooks to call
+        require(Suave.isConfidential(), "Execution must be confidential");
+        // An offchain request must contain the quote request
         bytes memory data = Context.confidentialInputs();
+        
+        RFQRequest memory rfqRequest = abi.decode(data, (RFQRequest));
+
         uint256 bestQuote = 0;
         for(uint i = 0; i < 5; i++) {
             // bytes memory rpcData = Suave.confidentialRetrieve(webhookRecord, WEBHOOK_NAMES[i]);
