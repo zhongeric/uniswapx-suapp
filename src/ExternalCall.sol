@@ -36,7 +36,7 @@ contract ExternalCall is Suapp {
     function offchain(address contractAddr, address account) external returns (bytes memory) {
         bytes memory rpcData = Suave.confidentialRetrieve(rpcRecord, RPC);
         string memory endpoint = bytesToString(rpcData);
-        
+
         Gateway gateway = new Gateway(endpoint, contractAddr);
         ERC20 token = ERC20(address(gateway));
         uint256 balance = token.balanceOf(account);
@@ -44,12 +44,12 @@ contract ExternalCall is Suapp {
 
         return abi.encodeWithSelector(this.onchain.selector);
     }
-    
+
     function bytesToString(bytes memory data) internal pure returns (string memory) {
         uint256 length = data.length;
         bytes memory chars = new bytes(length);
 
-        for(uint i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; i++) {
             chars[i] = data[i];
         }
 

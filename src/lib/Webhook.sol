@@ -15,8 +15,7 @@ contract Webhook {
     }
 
     /// @notice constructor to create a Webhook instance.
-    constructor() {
-    }
+    constructor() {}
 
     function get() public returns (string memory) {
         Suave.HttpRequest memory request;

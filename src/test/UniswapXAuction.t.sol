@@ -6,12 +6,9 @@ import "suave-std/Test.sol";
 import "suave-std/Context.sol";
 import "suave-std/suavelib/Suave.sol";
 
-contract UniswapXAuctionTest is Test, SuaveEnabled {
-    struct RFQRequest {
-        address tokenIn;
-        string[] webhooks;
-    }
+import {UniswapXOrder} from "../UniswapXAuction.sol";
 
+contract UniswapXAuctionTest is Test, SuaveEnabled {
     event Log(bytes data);
 
     function testEncodeStringArray() public {
@@ -22,31 +19,25 @@ contract UniswapXAuctionTest is Test, SuaveEnabled {
         emit Log(abi.encode(webhooks));
     }
 
-    function testEncodeStruct() public {
-        string[] memory webhooks = new string[](2);
-        webhooks[0] = "webhook1";
-        webhooks[1] = "webhook2";
-
-        RFQRequest memory rfqRequest = RFQRequest({
-            tokenIn: address(0),
-            webhooks: webhooks
-        });
-        emit Log(abi.encode(rfqRequest));
-    }
-
     function testConfidentialInputsWithStruct() public {
-        RFQRequest memory rfqRequest = RFQRequest({
+        UniswapXOrder memory order = UniswapXOrder({
             tokenIn: address(0),
-            webhooks: new string[](0)
+            tokenOut: address(1),
+            amount: 100,
+            nonce: 1,
+            swapper: address(2),
+            webhooks: new string[](0),
+            signature: new bytes(0)
         });
-        bytes memory input = abi.encode(rfqRequest);
+        bytes memory input = abi.encode(order);
+        emit Log(input);
         ctx.setConfidentialInputs(input);
 
         bytes memory found2 = Context.confidentialInputs();
         assertEq0(input, found2);
 
-        RFQRequest memory found = abi.decode(found2, (RFQRequest));
-        assertEq(rfqRequest.tokenIn, found.tokenIn);
-        assertEq(rfqRequest.webhooks.length, found.webhooks.length);
+        UniswapXOrder memory found = abi.decode(found2, (UniswapXOrder));
+        assertEq(order.tokenIn, found.tokenIn);
+        assertEq(order.webhooks.length, found.webhooks.length);
     }
 }
