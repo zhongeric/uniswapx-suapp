@@ -7,7 +7,7 @@ contract TestEncode is Test {
 
     struct RFQRequest {
         address tokenIn;
-        // address[] webhooks;
+        string[] webhooks;
     }
 
     function setUp() public {
@@ -25,13 +25,13 @@ contract TestEncode is Test {
     }
 
     function testEncodeStruct() public {
-        // string[] memory webhooks = new string[](2);
-        // webhooks[0] = "webhook1";
-        // webhooks[1] = "webhook2";
+        string[] memory webhooks = new string[](2);
+        webhooks[0] = "webhook1";
+        webhooks[1] = "webhook2";
 
         RFQRequest memory rfqRequest = RFQRequest({
-            tokenIn: address(0)
-            // webhooks: webhooks
+            tokenIn: address(0),
+            webhooks: webhooks
         });
         emit Log(abi.encode(rfqRequest));
     }

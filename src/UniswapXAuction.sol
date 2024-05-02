@@ -12,7 +12,7 @@ contract UniswapXAuction is Suapp {
     
     struct RFQRequest {
         address tokenIn;
-        // string[] webhooks;
+        string[] webhooks;
     }
 
     event WebhookNameRegistered(string name);
