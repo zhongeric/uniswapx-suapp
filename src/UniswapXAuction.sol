@@ -21,8 +21,13 @@ struct UniswapXOrder {
     bytes signature;
 }
 
+struct CosignerData {
+    uint256 amountOverride;
+}
+
 struct CosignedUniswapXOrder {
     UniswapXOrder order;
+    CosignerData cosignerData;
     bytes cosignature;
 }
 
@@ -97,7 +102,7 @@ contract UniswapXAuction is Suapp {
     function offchain(bytes memory data) external returns (bytes memory) {
         require(Suave.isConfidential(), "Execution must be confidential");
 
-        // bytes memory data = Context.confidentialInputs();
+        // TODO: pass data via confidential inputs when fixed
 
         UniswapXOrder memory order = abi.decode(data, (UniswapXOrder));
 
@@ -130,7 +135,7 @@ contract UniswapXAuction is Suapp {
 
         string[] memory webhooks = order.webhooks;
 
-        uint256 bestQuote = 0;
+        uint256 bestQuote = publicOrder.amount;
         for (uint256 i = 0; i < webhooks.length; i++) {
             bytes memory rpcData = Suave.confidentialRetrieve(webhookRecord, webhooks[i]);
             string memory endpoint = bytesToString(rpcData);
@@ -147,13 +152,15 @@ contract UniswapXAuction is Suapp {
         }
         emit WinningQuote(bestQuote);
 
-        CosignedUniswapXOrder memory cosignedOrder = cosignOrder(record.id, publicOrder);
+        CosignerData memory cosignerData = CosignerData({amountOverride: bestQuote});
+        CosignedUniswapXOrder memory cosignedOrder = cosignOrder(record.id, publicOrder, cosignerData);
+
         emit RevealCosignedOrder(cosignedOrder);
 
         return abi.encodeWithSelector(this.onchain.selector);
     }
 
-    function cosignOrder(Suave.DataId orderIdRecord, PublicUniswapXOrder memory publicOrder)
+    function cosignOrder(Suave.DataId orderIdRecord, PublicUniswapXOrder memory publicOrder, CosignerData memory cosignerData)
         internal
         returns (CosignedUniswapXOrder memory cosignedOrder)
     {
@@ -171,13 +178,13 @@ contract UniswapXAuction is Suapp {
 
         // Sign over the orderId using the stored cosignerKey
         bytes memory cosignerKey = Suave.confidentialRetrieve(cosignerKeyRecord, PRIVATE_KEY);
-        string memory cosignerKeyString = bytesToString(cosignerKey);
+        string memory cosignerKeyString = bytesToString(cosignerKey); 
 
-        bytes memory orderHash = bytes.concat(orderId); // TODO: use 712 or something
+        bytes memory digest = bytes.concat(orderId); // TODO: sign over cosigner data
 
-        bytes memory cosignature = Suave.signMessage(orderHash, Suave.CryptoSignature.SECP256, cosignerKeyString);
+        bytes memory cosignature = Suave.signMessage(digest, Suave.CryptoSignature.SECP256, cosignerKeyString);
 
-        cosignedOrder = CosignedUniswapXOrder({order: order, cosignature: cosignature});
+        cosignedOrder = CosignedUniswapXOrder({order: order, cosignature: cosignature, cosignerData: cosignerData});
     }
 
     // Returns the order ID used to look up a uniswapX order.
