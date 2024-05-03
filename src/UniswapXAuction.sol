@@ -14,8 +14,6 @@ struct UniswapXOrder {
     uint256 amount;
     uint256 nonce;
     address swapper;
-    // - for RFQ
-    string[] webhooks;
     // Private data
     // - for order execution
     bytes signature;
@@ -37,7 +35,6 @@ struct PublicUniswapXOrder {
     uint256 amount;
     uint256 nonce;
     address swapper;
-    string[] webhooks;
 }
 
 contract UniswapXAuction is Suapp {
@@ -102,7 +99,7 @@ contract UniswapXAuction is Suapp {
     function offchain(bytes memory data) external returns (bytes memory) {
         require(Suave.isConfidential(), "Execution must be confidential");
 
-        // TODO: pass data via confidential inputs when fixed
+        // bytes memory data = Context.confidentialInputs();
 
         UniswapXOrder memory order = abi.decode(data, (UniswapXOrder));
 
@@ -112,8 +109,7 @@ contract UniswapXAuction is Suapp {
             tokenOut: order.tokenOut,
             amount: order.amount,
             nonce: order.nonce,
-            swapper: order.swapper,
-            webhooks: order.webhooks
+            swapper: order.swapper
         });
         bytes32 orderId = getOrderId(publicOrder);
 
@@ -133,12 +129,10 @@ contract UniswapXAuction is Suapp {
             order.signature
         );
 
-        string[] memory webhooks = order.webhooks;
-
         uint256 bestQuote = publicOrder.amount;
-        for (uint256 i = 0; i < webhooks.length; i++) {
-            bytes memory rpcData = Suave.confidentialRetrieve(webhookRecord, webhooks[i]);
-            string memory endpoint = bytesToString(rpcData);
+        for (uint256 i = 0; i < 5; i++) {
+            // bytes memory rpcData = Suave.confidentialRetrieve(webhookRecord, webhooks[i]);
+            // string memory endpoint = bytesToString(rpcData);
 
             Webhook webhook = new Webhook();
 
@@ -160,10 +154,11 @@ contract UniswapXAuction is Suapp {
         return abi.encodeWithSelector(this.onchain.selector);
     }
 
-    function cosignOrder(Suave.DataId orderIdRecord, PublicUniswapXOrder memory publicOrder, CosignerData memory cosignerData)
-        internal
-        returns (CosignedUniswapXOrder memory cosignedOrder)
-    {
+    function cosignOrder(
+        Suave.DataId orderIdRecord,
+        PublicUniswapXOrder memory publicOrder,
+        CosignerData memory cosignerData
+    ) internal returns (CosignedUniswapXOrder memory cosignedOrder) {
         bytes32 orderId = getOrderId(publicOrder);
         bytes memory foundSignature = Suave.confidentialRetrieve(orderIdRecord, LibString.toHexString(uint256(orderId)));
         UniswapXOrder memory order = UniswapXOrder({
@@ -172,13 +167,12 @@ contract UniswapXAuction is Suapp {
             amount: publicOrder.amount,
             nonce: publicOrder.nonce,
             swapper: publicOrder.swapper,
-            webhooks: publicOrder.webhooks,
             signature: foundSignature
         });
 
         // Sign over the orderId using the stored cosignerKey
         bytes memory cosignerKey = Suave.confidentialRetrieve(cosignerKeyRecord, PRIVATE_KEY);
-        string memory cosignerKeyString = bytesToString(cosignerKey); 
+        string memory cosignerKeyString = bytesToString(cosignerKey);
 
         bytes memory digest = bytes.concat(orderId); // TODO: sign over cosigner data
 

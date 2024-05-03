@@ -20,17 +20,12 @@ contract UniswapXAuctionTest is Test, SuaveEnabled {
     }
 
     function testConfidentialInputsWithStruct() public {
-        string[] memory webhooks = new string[](2);
-        webhooks[0] = "A";
-        webhooks[1] = "B";
-        
         UniswapXOrder memory order = UniswapXOrder({
             tokenIn: address(0),
             tokenOut: address(1),
             amount: 100,
             nonce: 1,
             swapper: address(2),
-            webhooks: webhooks,
             signature: new bytes(0)
         });
         bytes memory input = abi.encode(order);
@@ -42,6 +37,5 @@ contract UniswapXAuctionTest is Test, SuaveEnabled {
 
         UniswapXOrder memory found = abi.decode(found2, (UniswapXOrder));
         assertEq(order.tokenIn, found.tokenIn);
-        assertEq(order.webhooks.length, found.webhooks.length);
     }
 }
