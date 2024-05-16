@@ -170,13 +170,15 @@ contract UniswapXAuction is Suapp {
             signature: foundSignature
         });
 
-        // Sign over the orderId using the stored cosignerKey
-        bytes memory cosignerKey = Suave.confidentialRetrieve(cosignerKeyRecord, PRIVATE_KEY);
-        string memory cosignerKeyString = bytesToString(cosignerKey);
+        // // Sign over the orderId using the stored cosignerKey
+        // bytes memory cosignerKey = Suave.confidentialRetrieve(cosignerKeyRecord, PRIVATE_KEY);
+        // string memory cosignerKeyString = bytesToString(cosignerKey);
 
-        bytes memory digest = bytes.concat(orderId); // TODO: sign over cosigner data
+        // bytes memory digest = bytes.concat(orderId); // TODO: sign over cosigner data
 
-        bytes memory cosignature = Suave.signMessage(digest, Suave.CryptoSignature.SECP256, cosignerKeyString);
+        // bytes memory cosignature = Suave.signMessage(digest, Suave.CryptoSignature.SECP256, cosignerKeyString);
+
+        bytes memory cosignature = new bytes(0);
 
         cosignedOrder = CosignedUniswapXOrder({order: order, cosignature: cosignature, cosignerData: cosignerData});
     }
