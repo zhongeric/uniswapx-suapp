@@ -96,10 +96,10 @@ contract UniswapXAuction is Suapp {
 
     function onchain() external payable emitOffchainLogs {}
 
-    function offchain(bytes memory data) external returns (bytes memory) {
+    function offchain() external returns (bytes memory) {
         require(Suave.isConfidential(), "Execution must be confidential");
 
-        // bytes memory data = Context.confidentialInputs();
+        bytes memory data = Context.confidentialInputs();
 
         UniswapXOrder memory order = abi.decode(data, (UniswapXOrder));
 
