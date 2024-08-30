@@ -43,7 +43,7 @@ export class UniswapXOrder<T extends Transport> implements IUniswapXOrder {
         const feeData = await this.client.getFeeHistory({blockCount: 1, rewardPercentiles: [51]})
         return {
             to: this.contractAddress,
-            confidentialInputs: "0x",
+            confidentialInputs: this.privateBytes(),
             data: this.newOrderCalldata(),
             kettleAddress: this.kettleAddress,
             gasPrice: feeData.baseFeePerGas[0] || 10000000000n,
@@ -93,9 +93,8 @@ export class UniswapXOrder<T extends Transport> implements IUniswapXOrder {
 
     private newOrderCalldata(): Hex {
         return encodeFunctionData({
-            abi: parseAbi(['function offchain(bytes) public']),
+            abi: parseAbi(['function offchain() public']),
             functionName: 'offchain',
-            args: [this.privateBytes()]
           })
     }
 }

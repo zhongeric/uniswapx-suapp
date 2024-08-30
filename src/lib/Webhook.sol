@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 
 import "suave-std/suavelib/Suave.sol";
 import "solady/src/utils/JSONParserLib.sol";
+import "solady/src/utils/LibString.sol";
 
 /// @notice Webhook is a library with utilities to make requests to provided webhooks.
 contract Webhook {
@@ -31,6 +32,24 @@ contract Webhook {
         string memory result = item.at('"quote"').value();
 
         return result;
+    }
+
+    /**
+     * Notify registered webhooks via a standard json rpc schema
+     */
+    function post(string memory endpoint, bytes memory data) public {
+        Suave.HttpRequest memory request;
+        request.method = "POST";
+        request.url = endpoint;
+        request.headers = new string[](1);
+        request.headers[0] = "Content-Type: application/json";
+        request.body = abi.encodePacked(
+            '{"jsonrpc":"2.0","method":"uniswapx_wonOrder,"params":[{"data":"',
+            LibString.toHexString(data),
+            '"},"latest"],"id":1}'
+        );
+
+        Suave.doHTTPRequest(request);
     }
 
     function trimQuotes(string memory input) private pure returns (string memory) {

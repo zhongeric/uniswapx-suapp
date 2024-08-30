@@ -26,6 +26,8 @@ contract UniswapXAuctionTest is Test, SuaveEnabled {
             amount: 100,
             nonce: 1,
             swapper: address(2),
+            auctionStartTime: block.timestamp,
+            auctionEndTime: block.timestamp,
             signature: new bytes(0)
         });
         bytes memory input = abi.encode(order);
