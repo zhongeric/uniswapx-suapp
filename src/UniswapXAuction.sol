@@ -98,10 +98,10 @@ contract UniswapXAuction is Suapp {
         orderSignaturesRecord = _orderSignaturesRecord;
     }
 
-    function newOrderOffChain(bytes memory data) external returns (bytes memory) {
+    function newOrderOffChain() external returns (bytes memory) {
         require(Suave.isConfidential(), "Execution must be confidential");
 
-        // bytes memory data = Context.confidentialInputs();
+        bytes memory data = Context.confidentialInputs();
         UniswapXOrder memory order = abi.decode(data, (UniswapXOrder));
 
         // remove the signature from the order
